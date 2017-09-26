@@ -1,0 +1,19 @@
+{
+  "name": "rod-operator",
+  "version": "1.0.0",
+  "description": "An interface for controlling a Remotely Operated Device",
+  "main": "/server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nimobeeren/rod-operator.git"
+  },
+  "author": "Nimo Beeren",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nimobeeren/rod-operator/issues"
+  },
+  "homepage": "https://github.com/nimobeeren/rod-operator#readme"
+}
