@@ -1,7 +1,7 @@
 {
   "name": "rod-operator",
   "version": "1.0.0",
-  "description": "An interface for controlling a Remotely Operated Device",
+  "description": "An interface for remotely operating a rescue robot",
   "main": "/server/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
