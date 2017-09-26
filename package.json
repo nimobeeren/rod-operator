@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nimobeeren/rod-operator/issues"
   },
-  "homepage": "https://github.com/nimobeeren/rod-operator#readme"
+  "homepage": "https://github.com/nimobeeren/rod-operator#readme",
+  "dependencies": {
+    "express": "^4.15.5"
+  }
 }
