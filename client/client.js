@@ -2,8 +2,14 @@ var px = new PxGamepad();
 
 px.start();
 
-px.on('start', function() {
-    alert('Start button pressed');
+px.on('a', function() {
+    console.log('Turning LED on');
+    jQuery.get('send', { msg: '1' });
+});
+
+px.on('b', function() {
+    console.log('Turning LED off');
+    jQuery.get('send', { msg: '0' });
 });
 
 setInterval(function() {
