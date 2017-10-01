@@ -1,19 +1,21 @@
 var px = new PxGamepad();
-
 px.start();
 
-px.on('a', function() {
+// Turn LED on when A is pressed
+px.on('a', function () {
     console.log('Turning LED on');
-    jQuery.get('send', { msg: '1' });
+    jQuery.get('send', {msg: '1'});
 });
 
-px.on('b', function() {
+// Turn LED off when B is pressed
+px.on('b', function () {
     console.log('Turning LED off');
-    jQuery.get('send', { msg: '0' });
+    jQuery.get('send', {msg: '0'});
 });
 
-setInterval(function() {
+// Update controller input
+setInterval(function () {
     px.update();
-    document.getElementById('buttons').innerHTML = JSON.stringify(px.buttons);
-    document.getElementById('sticks').innerHTML = JSON.stringify(px.leftStick) + JSON.stringify(px.rightStick);
+    document.getElementById('buttons').innerHTML = JSON.stringify(px.buttons, null, 4);
+    document.getElementById('sticks').innerHTML = JSON.stringify(px.leftStick, null, 4) + JSON.stringify(px.rightStick, null, 4);
 }, 10);
