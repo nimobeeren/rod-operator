@@ -1,14 +1,14 @@
 var px = new PxGamepad();
 px.start();
 
-px.on('a', function () {
+px.on('rightTrigger', function () {
     console.log('Moving forward');
-    jQuery.get('send', {msg: '1'});
+    jQuery.get('send', {msg: 'rt'});
 });
 
-px.on('b', function () {
+px.on('leftTrigger', function () {
     console.log('Moving backward');
-    jQuery.get('send', {msg: '2'});
+    jQuery.get('send', {msg: 'lt'});
 });
 
 px.on('x', function () {

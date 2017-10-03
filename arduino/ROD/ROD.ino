@@ -2,38 +2,36 @@ int fwdPin = 3;
 int bckPin = 5;
 
 void setup() {
-  // Enable pin 13 as an output
-  pinMode(13, OUTPUT);
-  
-  // Turn off both outputs
-  analogWrite(fwdPin, 0);
-  analogWrite(bckPin, 0);
+	// Enable pin 13 as an output
+	pinMode(13, OUTPUT);
+	
+	// Turn off both outputs
+	analogWrite(fwdPin, 0);
+	analogWrite(bckPin, 0);
 
-  // Enable serial connetion using Ethernet or WiFi
-  Serial1.begin(115200);
+	// Enable serial connetion using Ethernet or WiFi
+	Serial1.begin(115200);
 
-  // Clear the buffer
-  while (Serial1.available()) {
-    Serial1.read();
-  }
+	// Clear the buffer
+	while (Serial1.available()) {
+		Serial1.read();
+	}
 }
 
 void loop() {
-  if (Serial1.available() > 0) {
-    char input = Serial1.read();
-    switch (input) {
-      case '0':
-        analogWrite(fwdPin, 0);
-        analogWrite(bckPin, 0);
-        break;
-      case '1':
-        analogWrite(fwdPin, 255);
-        analogWrite(bckPin, 0);
-        break;
-      case '2':
-        analogWrite(fwdPin, 0);
-        analogWrite(bckPin, 255);
-        break;
-    }
-  }
+	if (Serial1.available() > 0) {
+		String inputstr = Serial1.readString();
+		const char* input = inputstr.c_str();
+
+		if (strcmp(input, "rt") == 0) {
+			analogWrite(fwdPin, 255);
+			analogWrite(bckPin, 0);
+		} else if (strcmp(input, "lt") == 0) {
+			analogWrite(fwdPin, 0);
+			analogWrite(bckPin, 255);
+		} else {
+			analogWrite(fwdPin, 0);
+			analogWrite(bckPin, 0);
+		}
+	}
 }
