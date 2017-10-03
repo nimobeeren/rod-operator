@@ -1,19 +1,21 @@
 var px = new PxGamepad();
 px.start();
 
-// Turn LED on when A is pressed
 px.on('a', function () {
-    console.log('Turning LED on');
+    console.log('Moving forward');
     jQuery.get('send', {msg: '1'});
 });
 
-// Turn LED off when B is pressed
 px.on('b', function () {
-    console.log('Turning LED off');
+    console.log('Moving backward');
+    jQuery.get('send', {msg: '2'});
+});
+
+px.on('x', function () {
+    console.log('Stopping');
     jQuery.get('send', {msg: '0'});
 });
 
-// Update controller input
 setInterval(function () {
     px.update();
     document.getElementById('buttons').innerHTML = JSON.stringify(px.buttons, null, 4);
