@@ -21,6 +21,14 @@ px.on('rightTop', function () {
     jQuery.get('send', {msg: 'rb'});
 });
 
+px.on('y', function () {
+    jQuery.get('send', {msg: 'y'});
+});
+
+px.on('x', function () {
+    jQuery.get('send', {msg: 'x'});
+});
+
 setInterval(function () {
     px.update();
     document.getElementById('buttons').innerHTML = JSON.stringify(px.buttons, null, 4);

@@ -2,6 +2,7 @@
 
 int pinForwards = 3;
 int pinBackwards = 5;
+int pinReverse = 0;
 int pinLoader = 6;
 
 Servo svoLoader;
@@ -17,7 +18,7 @@ void setup() {
 	// Set control pin for servo's
 	svoLoader.attach(pinLoader);
 
-	// Turn off both outputs
+	// Turn off all outputs
 	analogWrite(pinForwards, 0);
 	analogWrite(pinBackwards, 0);
 
@@ -50,6 +51,12 @@ void loop() {
 		} else if (strcmp(input, "lb") == 0) {
 		    // Move loader down
             svoLoader.write(180);
+        } else if (strcmp(input, "y") == 0) {
+            // Enable reverse signal
+            digitalWrite(pinReverse, HIGH);
+        } else if (strcmp(input, "x") == 0) {
+            // Disable reverse signal
+            digitalWrite(pinReverse, LOW);
         }
 	}
 }
