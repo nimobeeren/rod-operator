@@ -1,19 +1,24 @@
 var px = new PxGamepad();
 px.start();
 
-px.on('rightTrigger', function () {
-    console.log('Moving forward');
-    jQuery.get('send', {msg: 'rt'});
-});
-
 px.on('leftTrigger', function () {
-    console.log('Moving backward');
     jQuery.get('send', {msg: 'lt'});
 });
 
-px.on('x', function () {
-    console.log('Stopping');
-    jQuery.get('send', {msg: '0'});
+px.on('rightTrigger', function () {
+    jQuery.get('send', {msg: 'rt'});
+});
+
+px.on('b', function () {
+    jQuery.get('send', {msg: 'b'});
+});
+
+px.on('leftTop', function () {
+    jQuery.get('send', {msg: 'lb'});
+});
+
+px.on('rightTop', function () {
+    jQuery.get('send', {msg: 'rb'});
 });
 
 setInterval(function () {
