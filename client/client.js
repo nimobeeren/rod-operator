@@ -2,31 +2,31 @@ var px = new PxGamepad();
 px.start();
 
 px.on('leftTrigger', function () {
-    jQuery.get('send', {msg: 'lt'});
+    send('lt');
 });
 
 px.on('rightTrigger', function () {
-    jQuery.get('send', {msg: 'rt'});
+    send('lt');
 });
 
 px.on('b', function () {
-    jQuery.get('send', {msg: 'b'});
+    send('b');
 });
 
 px.on('leftTop', function () {
-    jQuery.get('send', {msg: 'lb'});
+    send('lb');
 });
 
 px.on('rightTop', function () {
-    jQuery.get('send', {msg: 'rb'});
+    send('rb');
 });
 
 px.on('y', function () {
-    jQuery.get('send', {msg: 'y'});
+    send('y');
 });
 
 px.on('x', function () {
-    jQuery.get('send', {msg: 'x'});
+    send('x');
 });
 
 setInterval(function () {
@@ -34,3 +34,7 @@ setInterval(function () {
     document.getElementById('buttons').innerHTML = JSON.stringify(px.buttons, null, 4);
     document.getElementById('sticks').innerHTML = JSON.stringify(px.leftStick, null, 4) + JSON.stringify(px.rightStick, null, 4);
 }, 10);
+
+function send(msg) {
+    jQuery.get('send', {msg: msg});
+}
