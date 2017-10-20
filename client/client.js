@@ -5,19 +5,28 @@ function send(msg) {
     jQuery.get('send', {msg: msg});
 }
 
-function encode(gamepad) {
-    // Encode button states into a 4 charachter hex string
-    var buttonsBinary = '';
-    for (var button in gamepad.buttons) {
-        if (!gamepad.buttons.hasOwnProperty(button)) continue;
-        buttonsBinary += gamepad.buttons[button] ? '1' : '0';
-    }
-    var buttonsHex = parseInt(buttonsBinary, 2).toString(16);
-    while (buttonsHex.length < 4) {
-        buttonsHex = '0' + buttonsHex;
+function binaryToHex(bin) {
+    // Convert binary to hex string
+    var hex = parseInt(bin, 2).toString(16);
+
+    // Add 0-padding to fill 4 characters
+    while (hex.length < 4) {
+        hex = '0' + hex;
     }
 
-    return buttonsHex;
+    return hex;
+}
+
+function encode(gamepad) {
+    // Encode button states into a 16-digit binary string
+    var binary = '';
+    for (var button in gamepad.buttons) {
+        if (!gamepad.buttons.hasOwnProperty(button)) continue;
+        binary += gamepad.buttons[button] ? '1' : '0';
+    }
+
+    // Convert binary to a 4-digit hex string
+    return binaryToHex(binary);
 }
 
 setInterval(function () {
