@@ -20,13 +20,19 @@ function binaryToHex(bin) {
 function encode(gamepad) {
     // Encode button states into a 16-digit binary string
     var binary = '';
-    for (var button in gamepad.buttons) {
-        if (!gamepad.buttons.hasOwnProperty(button)) continue;
+    Object.keys(gamepad.buttons).forEach(function (button) {
         binary += gamepad.buttons[button] ? '1' : '0';
-    }
+    });
 
     // Convert binary to a 4-digit hex string
-    return binaryToHex(binary);
+    var buttons = binaryToHex(binary);
+
+    // Get a 4-character string representing 1 + the left stick X value
+    var x = 1 + Math.round(gamepad.leftStick.x * 100) / 100;
+    Math.max(0, Math.min(x, 2));
+    var leftStickX = x.toFixed(2);
+
+    return buttons + ',' + leftStickX;
 }
 
 setInterval(function () {
