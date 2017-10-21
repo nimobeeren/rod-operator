@@ -5,6 +5,12 @@ function send(msg) {
     jQuery.get('send', {msg: msg});
 }
 
+function floatToString(f) {
+    var d = 1 + Math.round(f * 100) / 100; // round to 2 decimals
+    Math.max(0, Math.min(d, 2)); // clamp to [0, 2]
+    return d.toFixed(2);
+}
+
 function binaryToHex(bin) {
     // Convert binary to hex string
     var hex = parseInt(bin, 2).toString(16);
@@ -27,12 +33,20 @@ function encode(gamepad) {
     // Convert binary to a 4-digit hex string
     var buttons = binaryToHex(binary);
 
-    // Get a 4-character string representing 1 + the left stick X value
-    var x = 1 + Math.round(gamepad.leftStick.x * 100) / 100;
-    Math.max(0, Math.min(x, 2));
-    var leftStickX = x.toFixed(2);
+    // Get a 4-character string equal to 1 + the left stick X value
+    var leftStickX = floatToString(gamepad.leftStick.x);
 
-    return buttons + ',' + leftStickX;
+    // Get a 4-character string equal to 1 + the left stick Y value
+    var leftStickY = floatToString(gamepad.leftStick.y);
+
+    // Get a 4-character string equal to 1 + the left stick X value
+    var rightStickX = floatToString(gamepad.rightStick.x);
+
+    // Get a 4-character string equal to 1 + the left stick X value
+    var rightStickY = floatToString(gamepad.rightStick.y);
+
+    // Return encoded gamepad state
+    return buttons + ',' + leftStickX + ',' + leftStickY + ',' + rightStickX + ',' + rightStickY + ';';
 }
 
 setInterval(function () {
