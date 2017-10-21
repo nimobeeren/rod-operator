@@ -1,6 +1,9 @@
 #include <Servo.h>
 
-int MESSAGE_SIZE = 4;
+// Controller state encoding
+int MESSAGE_SIZE = 9;
+int MESSAGE_BUTTONS[2] = {0, 4};
+int MESSAGE_LS[2] = {5, 9};
 
 // PWM out pins
 int pinWheelsLeft = 3;
@@ -10,6 +13,13 @@ int pinLoader = 6;
 // Digital out pins
 int pinReverseLeft = 7;
 int pinReverseRight = 8;
+
+// Controller state
+bool buttons[16];
+float leftStick;
+float rightStick;
+float leftTrigger;
+float rightTrigger;
 
 Servo svoLoader;
 
@@ -43,6 +53,10 @@ void setup() {
 
 void loop() {
 	if (Serial1.available() >= MESSAGE_SIZE) {
+	    // Print amount of received bytes
+	    Serial.print("Bytes: ");
+	    Serial.println(Serial1.available());
+
 		// Read the latest message
 		char message[MESSAGE_SIZE];
 		for (int i = 0; i < MESSAGE_SIZE; i++) {
@@ -55,16 +69,23 @@ void loop() {
 		}
 
 		// Print received message
-//		Serial.print(millis());
-//		Serial.print(" - ");
-//		Serial.println(message);
+		Serial.print("Message: ");
+		Serial.println(message);
 
-		bool buttons[16];
+		// Decode controller state
 		decodeButtons(message, buttons);
+		leftStick = decodeLeftStick(message);
+
+		// Print button state
+		Serial.print("Buttons: ");
 		for (int i = 0; i < 16; i++) {
 			Serial.print(buttons[i]);
 		}
 		Serial.println();
+
+		// Print left stick state
+		Serial.print("Left stick: ");
+		Serial.println(leftStick);
 
 		// Wheels
 		if (buttons[7]) {
@@ -103,12 +124,28 @@ void loop() {
 			digitalWrite(pinReverseLeft, LOW);
 			digitalWrite(pinReverseRight, LOW);
 		}
+
+		Serial.println();
 	}
 }
 
 bool decodeButtons(char msg[], bool *arr) {
-	bool hash[16][4] = { {false, false, false, false}, {false, false, false, true}, {false, false, true, false}, {false, false, true, true}, {false, true, false, false}, {false, true, false, true}, {false, true, true, false}, {false, true, true, true}, {true, false, false, false}, {true, false, false, true}, {true, false, true, false}, {true, false, true, true}, {true, true, false, false}, {true, true, false, true}, {true, true, true, false}, {true, true, true, true} };
-	for (int hexIndex = 0; hexIndex < 4; hexIndex++) {
+	bool hash[16][4] = {
+	    {0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 1, 0}, {0, 0, 1, 1},
+	    {0, 1, 0, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 1, 1, 1},
+	    {1, 0, 0, 0}, {1, 0, 0, 1}, {1, 0, 1, 0}, {1, 0, 1, 1},
+	    {1, 1, 0, 0}, {1, 1, 0, 1}, {1, 1, 1, 0}, {1, 1, 1, 1}
+	};
+
+	// Get the button state from the message
+	int length = MESSAGE_BUTTONS[1] - MESSAGE_BUTTONS[0];
+	char valueString[length];
+	for (int i = 0; i < length; i++) {
+	    valueString[i] = msg[MESSAGE_BUTTONS[0] + i];
+	}
+
+    // Convert hex string to bool array
+	for (int hexIndex = 0; hexIndex < length; hexIndex++) {
 		int location;
 		if (msg[hexIndex] >= '0' && msg[hexIndex] <= '9') {
 			location = msg[hexIndex] - '0';
@@ -122,5 +159,17 @@ bool decodeButtons(char msg[], bool *arr) {
 			arr[4 * hexIndex + binIndex] = hash[location][binIndex];
 		}
 	}
+
 	return arr;
+}
+
+float decodeLeftStick(char msg[]) {
+    // Get left stick state from the message
+    int length = MESSAGE_LS[1] - MESSAGE_LS[0];
+    char valueString[length];
+    for (int i = 0; i < length; i++) {
+        valueString[i] = msg[MESSAGE_LS[0] + i];
+    }
+
+    return atof(valueString) - 1.0;
 }
