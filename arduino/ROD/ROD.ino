@@ -1,9 +1,12 @@
 #include <Servo.h>
 
 // Controller state encoding
-int MESSAGE_SIZE = 9;
+int MESSAGE_SIZE = 25;
 int MESSAGE_BUTTONS[2] = {0, 4};
-int MESSAGE_LS[2] = {5, 9};
+int MESSAGE_LSX[2] = {5, 9};
+int MESSAGE_LSY[2] = {10, 14};
+int MESSAGE_RSX[2] = {15, 19};
+int MESSAGE_RSY[2] = {20, 24};
 
 // PWM out pins
 int pinWheelsLeft = 3;
@@ -14,10 +17,10 @@ int pinLoader = 6;
 int pinReverseLeft = 7;
 int pinReverseRight = 8;
 
-// Controller state
+// Variables to hold controller state
 bool buttons[16];
-float leftStick;
-float rightStick;
+float leftStick[2];
+float rightStick[2];
 float leftTrigger;
 float rightTrigger;
 
@@ -73,8 +76,9 @@ void loop() {
 		Serial.println(message);
 
 		// Decode controller state
-		decodeButtons(message, buttons);
-		leftStick = decodeLeftStick(message);
+		decodeButtons(buttons, message);
+		decodeLeftStick(leftStick, message);
+		decodeRightStick(rightStick, message);
 
 		// Print button state
 		Serial.print("Buttons: ");
@@ -85,7 +89,15 @@ void loop() {
 
 		// Print left stick state
 		Serial.print("Left stick: ");
-		Serial.println(leftStick);
+		Serial.print(leftStick[0]);
+		Serial.print(", ");
+		Serial.println(leftStick[1]);
+
+		// Print right stick state
+        Serial.print("Right stick: ");
+        Serial.print(rightStick[0]);
+        Serial.print(", ");
+        Serial.println(rightStick[1]);
 
 		// Wheels
 		if (buttons[7]) {
@@ -129,47 +141,70 @@ void loop() {
 	}
 }
 
-bool decodeButtons(char msg[], bool *arr) {
+void decodeButtons(bool *buf, char *msg) {
 	bool hash[16][4] = {
-	    {0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 1, 0}, {0, 0, 1, 1},
-	    {0, 1, 0, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 1, 1, 1},
-	    {1, 0, 0, 0}, {1, 0, 0, 1}, {1, 0, 1, 0}, {1, 0, 1, 1},
-	    {1, 1, 0, 0}, {1, 1, 0, 1}, {1, 1, 1, 0}, {1, 1, 1, 1}
+		{0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 1, 0}, {0, 0, 1, 1},
+		{0, 1, 0, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 1, 1, 1},
+		{1, 0, 0, 0}, {1, 0, 0, 1}, {1, 0, 1, 0}, {1, 0, 1, 1},
+		{1, 1, 0, 0}, {1, 1, 0, 1}, {1, 1, 1, 0}, {1, 1, 1, 1}
 	};
 
 	// Get the button state from the message
 	int length = MESSAGE_BUTTONS[1] - MESSAGE_BUTTONS[0];
-	char valueString[length];
+	char buttonStr[length];
 	for (int i = 0; i < length; i++) {
-	    valueString[i] = msg[MESSAGE_BUTTONS[0] + i];
+		buttonStr[i] = msg[MESSAGE_BUTTONS[0] + i];
 	}
 
-    // Convert hex string to bool array
+	// Convert hex string to bool array
 	for (int hexIndex = 0; hexIndex < length; hexIndex++) {
 		int location;
-		if (msg[hexIndex] >= '0' && msg[hexIndex] <= '9') {
-			location = msg[hexIndex] - '0';
-		} else if (msg[hexIndex] >= 'a' && msg[hexIndex] <= 'f') {
-			location = msg[hexIndex] - 'a' + 10;
+		if (buttonStr[hexIndex] >= '0' && buttonStr[hexIndex] <= '9') {
+			location = buttonStr[hexIndex] - '0';
+		} else if (buttonStr[hexIndex] >= 'a' && buttonStr[hexIndex] <= 'f') {
+			location = buttonStr[hexIndex] - 'a' + 10;
 		} else {
 			location = 0;
 		}
 
 		for (int binIndex = 0; binIndex < 4; binIndex++) {
-			arr[4 * hexIndex + binIndex] = hash[location][binIndex];
+			buf[4 * hexIndex + binIndex] = hash[location][binIndex];
 		}
 	}
-
-	return arr;
 }
 
-float decodeLeftStick(char msg[]) {
-    // Get left stick state from the message
-    int length = MESSAGE_LS[1] - MESSAGE_LS[0];
-    char valueString[length];
-    for (int i = 0; i < length; i++) {
-        valueString[i] = msg[MESSAGE_LS[0] + i];
-    }
+void decodeLeftStick(float *buf, char *msg) {
+	// Get left stick X value from the message
+	int xLength = MESSAGE_LSX[1] - MESSAGE_LSX[0];
+	char xStr[xLength];
+	for (int i = 0; i < xLength; i++) {
+		xStr[i] = msg[MESSAGE_LSX[0] + i];
+	}
+	buf[0] = atof(xStr) - 1.0;
 
-    return atof(valueString) - 1.0;
+	// Get left stick Y value from the message
+	int yLength = MESSAGE_LSY[1] - MESSAGE_LSY[0];
+	char yStr[yLength];
+	for (int i = 0; i < yLength; i++) {
+		yStr[i] = msg[MESSAGE_LSY[0] + i];
+	}
+	buf[1] = atof(yStr) - 1.0;
+}
+
+void decodeRightStick(float *buf, char *msg) {
+	// Get right stick X value from the message
+	int xLength = MESSAGE_RSX[1] - MESSAGE_RSX[0];
+	char xStr[xLength];
+	for (int i = 0; i < xLength; i++) {
+		xStr[i] = msg[MESSAGE_RSX[0] + i];
+	}
+	buf[0] = atof(xStr) - 1.0;
+
+	// Get right stick Y value from the message
+	int yLength = MESSAGE_RSY[1] - MESSAGE_RSY[0];
+	char yStr[yLength];
+	for (int i = 0; i < yLength; i++) {
+		yStr[i] = msg[MESSAGE_RSY[0] + i];
+	}
+	buf[1] = atof(yStr) - 1.0;
 }
