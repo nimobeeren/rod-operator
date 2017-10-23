@@ -15,12 +15,14 @@ typedef struct {
 } AnalogStick;
 
 // Controller state encoding
-const int PACKET_SIZE = 25;
+const int PACKET_SIZE = 35;
 const int PACKET_BUTTONS[2] = {0, 4};
 const int PACKET_LSX[2] = {5, 9};
 const int PACKET_LSY[2] = {10, 14};
 const int PACKET_RSX[2] = {15, 19};
 const int PACKET_RSY[2] = {20, 24};
+const int PACKET_LT[2] = {25, 29};
+const int PACKET_RT[2] = {30, 34};
 
 // PWM out pins
 int pinWheelsLeft = 3;
@@ -100,6 +102,8 @@ void loop() {
 		buttons = decodeButtons(packet);
 		leftStick = decodeLeftStick(packet);
 		rightStick = decodeRightStick(packet);
+		leftTrigger = decodeLeftTrigger(packet);
+		rightTrigger = decodeRightTrigger(packet);
 
 		// Print button state
 		Serial.print("Buttons: ");
@@ -119,6 +123,14 @@ void loop() {
         Serial.print(rightStick.x);
         Serial.print(", ");
         Serial.println(rightStick.y);
+
+        // Print left trigger state
+        Serial.print("Left trigger: ");
+        Serial.println(leftTrigger);
+
+        // Print right trigger state
+        Serial.print("Right trigger: ");
+        Serial.println(rightTrigger);
 
 		// Wheels
 		if (buttons.index[7]) {
@@ -241,4 +253,26 @@ AnalogStick decodeRightStick(char *packet) {
 	stick.y = atof(yStr) - 1.0;
 
 	return stick;
+}
+
+float decodeLeftTrigger(char *packet) {
+    // Get left stick value from packet
+    int length = PACKET_LT[1] - PACKET_LT[0];
+    char str[length];
+    for (int i = 0; i < length; i++) {
+        str[i] = packet[PACKET_LT[0] + i];
+    }
+
+    return atof(str);
+}
+
+float decodeRightTrigger(char *packet) {
+    // Get left stick value from packet
+    int length = PACKET_RT[1] - PACKET_RT[0];
+    char str[length];
+    for (int i = 0; i < length; i++) {
+        str[i] = packet[PACKET_RT[0] + i];
+    }
+
+    return atof(str);
 }
