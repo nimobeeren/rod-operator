@@ -1,3 +1,5 @@
+var pollingRate = 50; // Hz
+
 var px = new PxGamepad();
 px.start();
 
@@ -6,7 +8,7 @@ function send(msg) {
 }
 
 function floatToString(f) {
-    var d = 1 + Math.round(f * 100) / 100; // round to 2 decimals
+    var d = Math.round(f * 100) / 100; // round to 2 decimals
     Math.max(0, Math.min(d, 2)); // clamp to [0, 2]
     return d.toFixed(2);
 }
@@ -33,20 +35,19 @@ function encode(gamepad) {
     // Convert binary to a 4-digit hex string
     var buttons = binaryToHex(binary);
 
-    // Get a 4-character string equal to 1 + the left stick X value
-    var leftStickX = floatToString(gamepad.leftStick.x);
+    // Get a 4-character string equal to 1 + the stick values
+    var leftStickX = floatToString(gamepad.leftStick.x + 1);
+    var leftStickY = floatToString(gamepad.leftStick.y + 1);
+    var rightStickX = floatToString(gamepad.rightStick.x + 1);
+    var rightStickY = floatToString(gamepad.rightStick.y + 1);
 
-    // Get a 4-character string equal to 1 + the left stick Y value
-    var leftStickY = floatToString(gamepad.leftStick.y);
-
-    // Get a 4-character string equal to 1 + the left stick X value
-    var rightStickX = floatToString(gamepad.rightStick.x);
-
-    // Get a 4-character string equal to 1 + the left stick X value
-    var rightStickY = floatToString(gamepad.rightStick.y);
+    // Get a 4-character string equal to the trigger values
+    var leftTrigger = floatToString(gamepad.leftTrigger);
+    var rightTrigger = floatToString(gamepad.rightTrigger);
 
     // Return encoded gamepad state
-    return buttons + ',' + leftStickX + ',' + leftStickY + ',' + rightStickX + ',' + rightStickY + ';';
+    return buttons + ',' + leftStickX + ',' + leftStickY + ',' + rightStickX + ',' + rightStickY + ',' +
+        leftTrigger + ',' + rightTrigger + ';';
 }
 
 setInterval(function () {
@@ -64,4 +65,4 @@ setInterval(function () {
         document.getElementById('buttons').innerHTML = 'No gamepad connected';
         document.getElementById('sticks').innerHTML = '';
     }
-}, 10);
+}, 1000 / pollingRate);
