@@ -28,6 +28,10 @@ const int PACKET_RT[2] = {30, 34};
 int pinWheelsLeft = 3;
 int pinWheelsRight = 5;
 int pinLoader = 6;
+int pinBoarding = 9;
+int pinCameraPitch = 10;
+int pinCameraYaw = 11;
+int pinCrane = 13;
 
 // Digital out pins
 int pinReverseLeft = 7;
@@ -41,6 +45,10 @@ float leftTrigger;
 float rightTrigger;
 
 Servo svoLoader;
+Servo svoBoarding;
+Servo svoCameraPitch;
+Servo svoCameraYaw;
+Servo svoCrane;
 
 void setup() {
 	// Enable serial connetion using Ethernet or WiFi
@@ -50,6 +58,10 @@ void setup() {
     pinMode(pinWheelsLeft, OUTPUT);
 	pinMode(pinWheelsRight, OUTPUT);
 	pinMode(pinLoader, OUTPUT);
+    pinMode(pinBoarding, OUTPUT);
+    pinMode(pinCameraPitch, OUTPUT);
+    pinMode(pinCameraYaw, OUTPUT);
+    pinMode(pinCrane, OUTPUT);
 	pinMode(pinReverseLeft, OUTPUT);
 	pinMode(pinReverseRight, OUTPUT);
 
@@ -59,6 +71,10 @@ void setup() {
 
 	// Set control pin for servo's
 	svoLoader.attach(pinLoader);
+	svoBoarding.attach(pinBoarding);
+	svoCameraPitch.attach(pinCameraPitch);
+	svoCameraYaw.attach(pinCameraYaw);
+	svoCrane.attach(pinCrane);
 
 	// Turn off all outputs
 	analogWrite(pinWheelsLeft, 0);
@@ -72,10 +88,6 @@ void setup() {
 
 void loop() {
 	if (Serial1.available() >= PACKET_SIZE) {
-	    // Print amount of received bytes
-	    Serial.print("Bytes: ");
-	    Serial.println(Serial1.available());
-
 		// Read the latest packet
 		char packet[PACKET_SIZE];
 		for (int i = 0; i < PACKET_SIZE; i++) {
@@ -105,32 +117,32 @@ void loop() {
 		leftTrigger = decodeLeftTrigger(packet);
 		rightTrigger = decodeRightTrigger(packet);
 
-		// Print button state
-		Serial.print("Buttons: ");
-		for (int i = 0; i < 16; i++) {
-			Serial.print(buttons.index[i]);
-		}
-		Serial.println();
-
-		// Print left stick state
-		Serial.print("Left stick: ");
-		Serial.print(leftStick.x);
-		Serial.print(", ");
-		Serial.println(leftStick.y);
-
-		// Print right stick state
-        Serial.print("Right stick: ");
-        Serial.print(rightStick.x);
-        Serial.print(", ");
-        Serial.println(rightStick.y);
-
-        // Print left trigger state
-        Serial.print("Left trigger: ");
-        Serial.println(leftTrigger);
-
-        // Print right trigger state
-        Serial.print("Right trigger: ");
-        Serial.println(rightTrigger);
+//		// Print button state
+//		Serial.print("Buttons: ");
+//		for (int i = 0; i < 16; i++) {
+//			Serial.print(buttons.index[i]);
+//		}
+//		Serial.println();
+//
+//		// Print left stick state
+//		Serial.print("Left stick: ");
+//		Serial.print(leftStick.x);
+//		Serial.print(", ");
+//		Serial.println(leftStick.y);
+//
+//		// Print right stick state
+//        Serial.print("Right stick: ");
+//        Serial.print(rightStick.x);
+//        Serial.print(", ");
+//        Serial.println(rightStick.y);
+//
+//        // Print left trigger state
+//        Serial.print("Left trigger: ");
+//        Serial.println(leftTrigger);
+//
+//        // Print right trigger state
+//        Serial.print("Right trigger: ");
+//        Serial.println(rightTrigger);
 
 		// Wheels
 		if (buttons.index[7]) {
@@ -169,6 +181,36 @@ void loop() {
 			digitalWrite(pinReverseLeft, LOW);
 			digitalWrite(pinReverseRight, LOW);
 		}
+
+//		if (buttons.name.a) {
+//            moveServo(svoBoarding, 0, 180, 10);
+//		} else if (buttons.name.b) {
+//            moveServo(svoBoarding, 180, 0, 10);
+//		} else if (buttons.name.x) {
+//		    moveServo(svoCrane, 0, 70, 10);
+//		} else if (buttons.name.y) {
+//		    moveServo(svoCrane, 70, 0, 10);
+//		} else if (buttons.name.select) {
+//		    moveServo(svoLoader, 0, 180, 10);
+//		} else if (buttons.name.start) {
+//		    moveServo(svoLoader, 180, 0, 10);
+//		} else if (buttons.name.dpadLeft) {
+//		    moveServo(svoCameraYaw, 0, 180, 10);
+//		} else if (buttons.name.dpadRight) {
+//		    moveServo(svoCameraYaw, 180, 0, 10);
+//		} else if (buttons.name.dpadUp) {
+//            moveServo(svoCameraPitch, 70, 110, 10);
+//		} else if (buttons.name.dpadDown) {
+//            moveServo(svoCameraPitch, 110, 70, 10);
+//		}
+
+        if (buttons.index[0]) {
+            Serial.println("Servo up");
+            moveServo(svoBoarding, 0, 180, 10);
+        } else if (buttons.index[1]) {
+            Serial.println("Servo down");
+            moveServo(svoBoarding, 180, 0, 10);
+        }
 
 		Serial.println();
 	}
@@ -275,4 +317,11 @@ float decodeRightTrigger(char *packet) {
     }
 
     return atof(str);
+}
+
+void moveServo(Servo svo, int from, int to, int delayTime) {
+    for (int i = from; i < to; i++) {
+        svo.write(i);
+        delay(delayTime);
+    }
 }
