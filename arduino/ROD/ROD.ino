@@ -89,6 +89,13 @@ void loop() {
 		Serial.print("Packet: ");
 		Serial.println(packet);
 
+		// Validate packet
+		if (packet[PACKET_SIZE - 1] != ';') {
+		    Serial.println("Bad packet");
+		    Serial.println();
+		    return;
+		}
+
 		// Decode controller state
 		buttons = decodeButtons(packet);
 		leftStick = decodeLeftStick(packet);
@@ -151,7 +158,7 @@ void loop() {
 			digitalWrite(pinReverseRight, LOW);
 		}
 
-//		Serial.println();
+		Serial.println();
 	}
 }
 
