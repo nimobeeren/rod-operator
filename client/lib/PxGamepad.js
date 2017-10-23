@@ -33,6 +33,8 @@
 
     // reset button and stick state
     PxGamepad.prototype.reset = function() {
+        this.leftTrigger = 0;
+        this.rightTrigger = 0;
         this.leftStick = { x: 0, y: 0 };
         this.rightStick = { x: 0, y: 0 };
         this.dpad = { x: 0, y: 0 };
@@ -168,6 +170,8 @@
         }
 
         // update the sticks
+        this.leftTrigger = gp.buttons[6].value;
+        this.rightTrigger = gp.buttons[7].value;
         this.leftStick.x = gp.axes[0];
         this.leftStick.y = gp.axes[1];
         this.rightStick.x = gp.axes[2];
