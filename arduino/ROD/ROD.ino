@@ -6,7 +6,7 @@ typedef union {
             leftTop, rightTop, leftTrigger, rightTrigger,
             select, start, leftStick, rightStick,
             dpadUp, dpadDown, dpadLeft, dpadRight;
-    };
+    } name;
     bool index[16];
 } DigitalButtons;
 
@@ -23,6 +23,13 @@ const int PACKET_RSX[2] = {15, 19};
 const int PACKET_RSY[2] = {20, 24};
 const int PACKET_LT[2] = {25, 29};
 const int PACKET_RT[2] = {30, 34};
+
+// Minimum and maximum angles of servos
+const int RANGE_LOADER[2] = {0, 90};
+const int RANGE_BOARDING[2] = {0, 180};
+const int RANGE_CAMERA_PITCH[2] = {0, 180};
+const int RANGE_CAMERA_YAW[2] = {0, 180};
+const int RANGE_CRANE[2] = {0, 70};
 
 // PWM out pins
 int pinWheelsLeft = 3;
@@ -182,35 +189,27 @@ void loop() {
 			digitalWrite(pinReverseRight, LOW);
 		}
 
-//		if (buttons.name.a) {
-//            moveServo(svoBoarding, 0, 180, 10);
-//		} else if (buttons.name.b) {
-//            moveServo(svoBoarding, 180, 0, 10);
-//		} else if (buttons.name.x) {
-//		    moveServo(svoCrane, 0, 70, 10);
-//		} else if (buttons.name.y) {
-//		    moveServo(svoCrane, 70, 0, 10);
-//		} else if (buttons.name.select) {
-//		    moveServo(svoLoader, 0, 180, 10);
-//		} else if (buttons.name.start) {
-//		    moveServo(svoLoader, 180, 0, 10);
-//		} else if (buttons.name.dpadLeft) {
-//		    moveServo(svoCameraYaw, 0, 180, 10);
-//		} else if (buttons.name.dpadRight) {
-//		    moveServo(svoCameraYaw, 180, 0, 10);
-//		} else if (buttons.name.dpadUp) {
-//            moveServo(svoCameraPitch, 70, 110, 10);
-//		} else if (buttons.name.dpadDown) {
-//            moveServo(svoCameraPitch, 110, 70, 10);
-//		}
-
-        if (buttons.index[0]) {
-            Serial.println("Servo up");
-            moveServo(svoBoarding, 0, 180, 10);
-        } else if (buttons.index[1]) {
-            Serial.println("Servo down");
-            moveServo(svoBoarding, 180, 0, 10);
-        }
+		if (buttons.name.a) {
+            moveServo(svoBoarding, RANGE_BOARDING[1], 10);
+		} else if (buttons.name.b) {
+            moveServo(svoBoarding, RANGE_BOARDING[0], 10);
+		} else if (buttons.name.x) {
+		    moveServo(svoCrane, RANGE_CRANE[1], 10);
+		} else if (buttons.name.y) {
+		    moveServo(svoCrane, RANGE_CRANE[0], 10);
+		} else if (buttons.name.start) {
+		    moveServo(svoLoader, RANGE_LOADER[1], 10);
+		} else if (buttons.name.select) {
+		    moveServo(svoLoader, RANGE_LOADER[0], 10);
+		} else if (buttons.name.dpadLeft) {
+		    moveServo(svoCameraYaw, RANGE_CAMERA_YAW[1], 10);
+		} else if (buttons.name.dpadRight) {
+		    moveServo(svoCameraYaw, RANGE_CAMERA_YAW[0]}, 10);
+		} else if (buttons.name.dpadUp) {
+            moveServo(svoCameraPitch, RANGE_CAMERA_PITCH[0], 10);
+		} else if (buttons.name.dpadDown) {
+            moveServo(svoCameraPitch, RANGE_CAMERA_PITCH[1], 10);
+		}
 
 		Serial.println();
 	}
@@ -319,9 +318,17 @@ float decodeRightTrigger(char *packet) {
     return atof(str);
 }
 
-void moveServo(Servo svo, int from, int to, int delayTime) {
-    for (int i = from; i < to; i++) {
-        svo.write(i);
-        delay(delayTime);
+void moveServo(Servo svo, int target, int delayTime) {
+    int current = svo.read();
+    if (target > current) {
+        for (int a = current; a < target; a++) {
+            svo.write(a);
+            delay(delayTime);
+        }
+    } else {
+        for (int a = current; a > target; a--) {
+            svo.write(a);
+            delay(delayTime);
+        }
     }
 }
