@@ -1,17 +1,17 @@
 #include <Servo.h>
 
 typedef union {
-    struct name {
-        bool a, b, x, y,
-            leftTop, rightTop, leftTrigger, rightTrigger,
-            select, start, leftStick, rightStick,
-            dpadUp, dpadDown, dpadLeft, dpadRight;
-    } name;
-    bool index[16];
+	struct name {
+		bool a, b, x, y,
+			leftTop, rightTop, leftTrigger, rightTrigger,
+			select, start, leftStick, rightStick,
+			dpadUp, dpadDown, dpadLeft, dpadRight;
+	} name;
+	bool index[16];
 } DigitalButtons;
 
 typedef struct {
-    float x, y;
+	float x, y;
 } AnalogStick;
 
 // Controller state encoding
@@ -61,8 +61,8 @@ void setup() {
 	// Enable serial for debugging purposes
 	Serial.begin(9600);
 
-    // Enable output on all out pins
-    pinMode(pinWheelsLeft, OUTPUT);
+	// Enable output on all out pins
+	pinMode(pinWheelsLeft, OUTPUT);
 	pinMode(pinWheelsRight, OUTPUT);
 	pinMode(pinLoader, OUTPUT);
 	pinMode(pinReverseLeft, OUTPUT);
@@ -86,124 +86,124 @@ void setup() {
 }
 
 void loop() {
-    char packet[PACKET_SIZE];
-    int readBytes = 0;
+	char packet[PACKET_SIZE];
+	int readBytes = 0;
 	while (readBytes < PACKET_SIZE) {
-	    if (Serial1.available()) {
-	        packet[readBytes++] = Serial1.read();
-	        if (packet[readBytes - 1] == ';' && readBytes < PACKET_SIZE) {
-                // We found a termination symbol before the end of the packet
-                Serial.print("Bad packet: ");
-                Serial.println(packet);
-                Serial.println();
-                return;
-            }
-	    }
+		if (Serial1.available()) {
+			packet[readBytes++] = Serial1.read();
+			if (packet[readBytes - 1] == ';' && readBytes < PACKET_SIZE) {
+				// We found a termination symbol before the end of the packet
+				Serial.print("Bad packet: ");
+				Serial.println(packet);
+				Serial.println();
+				return;
+			}
+		}
 	}
 
-    // Print received packet
-//    Serial.print("Packet: ");
-//    Serial.println(packet);
+	// Print received packet
+//	Serial.print("Packet: ");
+//	Serial.println(packet);
 
-    // Decode controller state
-    buttons = decodeButtons(packet);
-    leftStick = decodeLeftStick(packet);
-    rightStick = decodeRightStick(packet);
-    leftTrigger = decodeLeftTrigger(packet);
-    rightTrigger = decodeRightTrigger(packet);
+	// Decode controller state
+	buttons = decodeButtons(packet);
+	leftStick = decodeLeftStick(packet);
+	rightStick = decodeRightStick(packet);
+	leftTrigger = decodeLeftTrigger(packet);
+	rightTrigger = decodeRightTrigger(packet);
 
-    // Print controller state for debugging
-//		printControllerState();
+	// Print controller state for debugging
+//	printControllerState();
 
-    // Wheels
-    if (leftTrigger > DEADZONE_TRIGGER || rightTrigger > DEADZONE_TRIGGER || abs(leftStick.x) > DEADZONE_STICK) {
-        float leftSpeed, rightSpeed;
-        float x = rightTrigger - leftTrigger;
-        float y = leftStick.x;
+	// Wheels
+	if (leftTrigger > DEADZONE_TRIGGER || rightTrigger > DEADZONE_TRIGGER || abs(leftStick.x) > DEADZONE_STICK) {
+		float leftSpeed, rightSpeed;
+		float x = rightTrigger - leftTrigger;
+		float y = leftStick.x;
 
-        // Don't read small deficiencies in stick placement
-        if (abs(y) <= DEADZONE_STICK) {
-            y = 0;
-        }
+		// Don't read small deficiencies in stick placement
+		if (abs(y) <= DEADZONE_STICK) {
+			y = 0;
+		}
 
-        // Calculate speed of wheels with respect to throttle and steering
-        leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
-        rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
-        leftSpeed = constrain(leftSpeed, -1, 1);
-        rightSpeed = constrain(rightSpeed, -1, 1);
+		// Calculate speed of wheels with respect to throttle and steering
+		leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
+		rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
+		leftSpeed = constrain(leftSpeed, -1, 1);
+		rightSpeed = constrain(rightSpeed, -1, 1);
 
-        // Print wheel speed
-        Serial.print("Left wheels: ");
-        Serial.print(leftSpeed);
-        Serial.print("\tRight wheels: ");
-        Serial.println(rightSpeed);
+		// Print wheel speed
+		Serial.print("Left wheels: ");
+		Serial.print(leftSpeed);
+		Serial.print("\tRight wheels: ");
+		Serial.println(rightSpeed);
 
-        // Apply wheel speed
-        analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
-        analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
+		// Apply wheel speed
+		analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
+		analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
 
-        // Apply wheel direction
-        if (leftSpeed < 0) {
-            setReverseLeft(true);
-        } else {
-            setReverseLeft(false);
-        }
-        if (rightSpeed < 0) {
-            setReverseRight(true);
-        } else {
-            setReverseRight(false);
-        }
-    }
+		// Apply wheel direction
+		if (leftSpeed < 0) {
+			setReverseLeft(true);
+		} else {
+			setReverseLeft(false);
+		}
+		if (rightSpeed < 0) {
+			setReverseRight(true);
+		} else {
+			setReverseRight(false);
+		}
+	}
 
-    // Loader controls
-    if (buttons.name.a) {
-        Serial.println("Loader up");
-        moveServo(svoLoader, 180, 10);
-    } else if (buttons.name.b) {
-        Serial.println("Loader down");
-        moveServo(svoLoader, 0, 10);
-    }
+	// Loader controls
+	if (buttons.name.a) {
+		Serial.println("Loader up");
+		moveServo(svoLoader, 180, 10);
+	} else if (buttons.name.b) {
+		Serial.println("Loader down");
+		moveServo(svoLoader, 0, 10);
+	}
 
-    // Boarding controls
-    if (buttons.name.leftTop) {
-        Serial.println("Boarding up");
-        moveServo(svoBoarding, 180, 10);
-    } else if (buttons.name.rightTop) {
-        Serial.println("Boarding down");
-        moveServo(svoBoarding, 0, 10);
-    }
+	// Boarding controls
+	if (buttons.name.leftTop) {
+		Serial.println("Boarding up");
+		moveServo(svoBoarding, 180, 10);
+	} else if (buttons.name.rightTop) {
+		Serial.println("Boarding down");
+		moveServo(svoBoarding, 0, 10);
+	}
 
-    // Crane controls
-    if (buttons.name.y) {
-        Serial.println("Crane up");
-        moveServo(svoCrane, 60, 10);
-    } else if (buttons.name.x) {
-        Serial.println("Crane down");
-        moveServo(svoCrane, 0, 10);
-    }
+	// Crane controls
+	if (buttons.name.y) {
+		Serial.println("Crane up");
+		moveServo(svoCrane, 60, 10);
+	} else if (buttons.name.x) {
+		Serial.println("Crane down");
+		moveServo(svoCrane, 0, 10);
+	}
 
-    // Camera controls
-    if (buttons.name.dpadUp) {
-        Serial.println("Camera pitch up");
-        int currentPos = svoCameraPitch.read();
-        int newPos = constrain(currentPos + 10, 0, 180);
-        moveServo(svoCameraPitch, newPos, 10);
-    } else if (buttons.name.dpadDown) {
-        Serial.println("Camera pitch down");
-        int currentPos = svoCameraPitch.read();
-        int newPos = constrain(currentPos - 10, 0, 180);
-        moveServo(svoCameraPitch, newPos, 10);
-    } else if (buttons.name.dpadLeft) {
-        Serial.println("Camera yaw up");
-        int currentPos = svoCameraYaw.read();
-        int newPos = constrain(currentPos + 10, 0, 180);
-        moveServo(svoCameraYaw, newPos, 10);
-    } else if (buttons.name.dpadRight) {
-        Serial.println("Camera yaw down");
-        int currentPos = svoCameraYaw.read();
-        int newPos = constrain(currentPos - 10, 0, 180);
-        moveServo(svoCameraYaw, newPos, 10);
-    }
+	// Camera controls
+	if (buttons.name.dpadUp) {
+		Serial.println("Camera pitch up");
+		int currentPos = svoCameraPitch.read();
+		int newPos = constrain(currentPos + 10, 0, 180);
+		moveServo(svoCameraPitch, newPos, 10);
+	} else if (buttons.name.dpadDown) {
+		Serial.println("Camera pitch down");
+		int currentPos = svoCameraPitch.read();
+		int newPos = constrain(currentPos - 10, 0, 180);
+		moveServo(svoCameraPitch, newPos, 10);
+	} else if (buttons.name.dpadLeft) {
+		Serial.println("Camera yaw up");
+		int currentPos = svoCameraYaw.read();
+		int newPos = constrain(currentPos + 10, 0, 180);
+		moveServo(svoCameraYaw, newPos, 10);
+	} else if (buttons.name.dpadRight) {
+		Serial.println("Camera yaw down");
+		int currentPos = svoCameraYaw.read();
+		int newPos = constrain(currentPos - 10, 0, 180);
+		moveServo(svoCameraYaw, newPos, 10);
+	}
 }
 
 DigitalButtons decodeButtons(char *packet) {
@@ -224,7 +224,7 @@ DigitalButtons decodeButtons(char *packet) {
 	// Convert hex string to bool array
 	DigitalButtons buttons;
 	for (int hexIndex = 0; hexIndex < length; hexIndex++) {
-	    // Convert hex character to decimal number
+		// Convert hex character to decimal number
 		int decimal;
 		if (buttonStr[hexIndex] >= '0' && buttonStr[hexIndex] <= '9') {
 			decimal = buttonStr[hexIndex] - '0';
@@ -234,7 +234,7 @@ DigitalButtons decodeButtons(char *packet) {
 			decimal = 0;
 		}
 
-        // Convert decimal number to 4-digit binary string using hash table
+		// Convert decimal number to 4-digit binary string using hash table
 		for (int binIndex = 0; binIndex < 4; binIndex++) {
 			buttons.index[4 * hexIndex + binIndex] = hash[decimal][binIndex];
 		}
@@ -244,7 +244,7 @@ DigitalButtons decodeButtons(char *packet) {
 }
 
 AnalogStick decodeLeftStick(char *packet) {
-    AnalogStick stick;
+	AnalogStick stick;
 
 	// Get left stick X value from packet
 	int xLength = PACKET_LSX[1] - PACKET_LSX[0];
@@ -266,7 +266,7 @@ AnalogStick decodeLeftStick(char *packet) {
 }
 
 AnalogStick decodeRightStick(char *packet) {
-    AnalogStick stick;
+	AnalogStick stick;
 
 	// Get right stick X value from packet
 	int xLength = PACKET_RSX[1] - PACKET_RSX[0];
@@ -288,87 +288,87 @@ AnalogStick decodeRightStick(char *packet) {
 }
 
 float decodeLeftTrigger(char *packet) {
-    // Get left stick value from packet
-    int length = PACKET_LT[1] - PACKET_LT[0];
-    char str[length];
-    for (int i = 0; i < length; i++) {
-        str[i] = packet[PACKET_LT[0] + i];
-    }
+	// Get left stick value from packet
+	int length = PACKET_LT[1] - PACKET_LT[0];
+	char str[length];
+	for (int i = 0; i < length; i++) {
+		str[i] = packet[PACKET_LT[0] + i];
+	}
 
-    return atof(str);
+	return atof(str);
 }
 
 float decodeRightTrigger(char *packet) {
-    // Get left stick value from packet
-    int length = PACKET_RT[1] - PACKET_RT[0];
-    char str[length];
-    for (int i = 0; i < length; i++) {
-        str[i] = packet[PACKET_RT[0] + i];
-    }
+	// Get left stick value from packet
+	int length = PACKET_RT[1] - PACKET_RT[0];
+	char str[length];
+	for (int i = 0; i < length; i++) {
+		str[i] = packet[PACKET_RT[0] + i];
+	}
 
-    return atof(str);
+	return atof(str);
 }
 
 void printControllerState() {
-    // Print button state
-    Serial.print("Buttons: ");
-    for (int i = 0; i < 16; i++) {
-        Serial.print(buttons.index[i]);
-    }
-    Serial.println();
+	// Print button state
+	Serial.print("Buttons: ");
+	for (int i = 0; i < 16; i++) {
+		Serial.print(buttons.index[i]);
+	}
+	Serial.println();
 
-    // Print left stick state
-    Serial.print("Left stick: ");
-    Serial.print(leftStick.x);
-    Serial.print(", ");
-    Serial.println(leftStick.y);
+	// Print left stick state
+	Serial.print("Left stick: ");
+	Serial.print(leftStick.x);
+	Serial.print(", ");
+	Serial.println(leftStick.y);
 
-    // Print right stick state
-    Serial.print("Right stick: ");
-    Serial.print(rightStick.x);
-    Serial.print(", ");
-    Serial.println(rightStick.y);
+	// Print right stick state
+	Serial.print("Right stick: ");
+	Serial.print(rightStick.x);
+	Serial.print(", ");
+	Serial.println(rightStick.y);
 
-    // Print left trigger state
-    Serial.print("Left trigger: ");
-    Serial.println(leftTrigger);
+	// Print left trigger state
+	Serial.print("Left trigger: ");
+	Serial.println(leftTrigger);
 
-    // Print right trigger state
-    Serial.print("Right trigger: ");
-    Serial.println(rightTrigger);
+	// Print right trigger state
+	Serial.print("Right trigger: ");
+	Serial.println(rightTrigger);
 }
 
 void moveServo(Servo svo, int to, int delayTime) {
-    int from = svo.read();
-    if (from < to) {
-        for (int i = from; i <= to; i++) {
-            Serial.print("Servo pos: ");
-            Serial.println(i);
-            svo.write(i);
-            delay(delayTime);
-        }
-    } else {
-        for (int i = from; i >= to; i--) {
-            Serial.print("Servo pos: ");
-            Serial.println(i);
-            svo.write(i);
-            delay(delayTime);
-        }
-    }
+	int from = svo.read();
+	if (from < to) {
+		for (int i = from; i <= to; i++) {
+			Serial.print("Servo pos: ");
+			Serial.println(i);
+			svo.write(i);
+			delay(delayTime);
+		}
+	} else {
+		for (int i = from; i >= to; i--) {
+			Serial.print("Servo pos: ");
+			Serial.println(i);
+			svo.write(i);
+			delay(delayTime);
+		}
+	}
 }
 
 void setReverseLeft(bool reverse) {
-    if (reverse) {
-        digitalWrite(pinReverseLeft, HIGH);
-    } else {
-        digitalWrite(pinReverseLeft, LOW);
-    }
+	if (reverse) {
+		digitalWrite(pinReverseLeft, HIGH);
+	} else {
+		digitalWrite(pinReverseLeft, LOW);
+	}
 }
 
 void setReverseRight(bool reverse) {
-    if (reverse) {
-        digitalWrite(pinForwardRight, LOW);
-    } else {
-        digitalWrite(pinForwardRight, HIGH);
-    }
+	if (reverse) {
+		digitalWrite(pinForwardRight, LOW);
+	} else {
+		digitalWrite(pinForwardRight, HIGH);
+	}
 }
