@@ -27,9 +27,16 @@ const int PACKET_RT[2] = {30, 34};
 // Servo position ranges
 const int RANGE_LOADER[2] = {0, 120};
 const int RANGE_BOARDING[2] = {0, 180};
+const int RANGE_CRANE[2] = {0, 70};
 const int RANGE_CAMERA_PITCH[2] = {0, 180};
 const int RANGE_CAMERA_YAW[2] = {0, 180};
-const int RANGE_CRANE[2] = {0, 70};
+
+// Servo speeds (°/s)
+const int SPEED_LOADER = 90;
+const int SPEED_BOARDING = 60;
+const int SPEED_CRANE = 40;
+const int SPEED_CAMERA_PITCH = 20;
+const int SPEED_CAMERA_YAW = 20;
 
 // Controller input deadzones
 const float DEADZONE_STICK = 0.2;
@@ -89,11 +96,11 @@ void setup() {
 	setReverseRight(false);
 
 	// Set all servo's to their initial position
-	svoLoader.write(RANGE_LOADER[0]);
+	svoLoader.write(RANGE_LOADER[1]);
 	svoBoarding.write(RANGE_BOARDING[1]);
+	svoCrane.write(RANGE_CRANE[0]);
 	svoCameraPitch.write(90);
 	svoCameraYaw.write(90);
-	svoCrane.write(RANGE_CRANE[0]);
 
 	// Clear the buffer
 	while (Serial1.available()) {
@@ -174,51 +181,47 @@ void loop() {
 	// Loader controls
 	if (buttons.name.a) {
 		Serial.println("Loader up");
-		moveServo(svoLoader, RANGE_LOADER[1], 10);
+		moveServo(svoLoader, RANGE_LOADER[1], SPEED_LOADER);
 	} else if (buttons.name.b) {
 		Serial.println("Loader down");
-		moveServo(svoLoader, RANGE_LOADER[0], 10);
+		moveServo(svoLoader, RANGE_LOADER[0], SPEED_LOADER);
 	}
 
 	// Boarding controls
 	if (buttons.name.leftTop) {
 		Serial.println("Boarding in");
-		moveServo(svoBoarding, RANGE_BOARDING[1], 10);
+		moveServo(svoBoarding, RANGE_BOARDING[1], SPEED_BOARDING);
 	} else if (buttons.name.rightTop) {
 		Serial.println("Boarding out");
-		moveServo(svoBoarding, RANGE_BOARDING[0], 10);
+		moveServo(svoBoarding, RANGE_BOARDING[0], SPEED_BOARDING);
 	}
 
 	// Crane controls
 	if (buttons.name.y) {
 		Serial.println("Crane up");
-		moveServo(svoCrane, RANGE_CRANE[1], 10);
+		moveServo(svoCrane, RANGE_CRANE[1], SPEED_CRANE);
 	} else if (buttons.name.x) {
 		Serial.println("Crane down");
-		moveServo(svoCrane, RANGE_CRANE[0], 10);
+		moveServo(svoCrane, RANGE_CRANE[0], SPEED_CRANE);
 	}
 
 	// Camera controls
 	if (buttons.name.dpadUp) {
 		Serial.println("Camera pitch up");
-		int currentPos = svoCameraPitch.read();
-		int newPos = constrain(currentPos + 10, 0, 180);
-		moveServo(svoCameraPitch, newPos, 10);
+		int newPos = constrain(svoCameraPitch.read() + 10, RANGE_CAMERA_PITCH[0], RANGE_CAMERA_PITCH[1]);
+		moveServo(svoCameraPitch, newPos, SPEED_CAMERA_PITCH);
 	} else if (buttons.name.dpadDown) {
 		Serial.println("Camera pitch down");
-		int currentPos = svoCameraPitch.read();
-		int newPos = constrain(currentPos - 10, 0, 180);
-		moveServo(svoCameraPitch, newPos, 10);
+		int newPos = constrain(svoCameraPitch.read() - 10, RANGE_CAMERA_PITCH[0], RANGE_CAMERA_PITCH[1]);
+		moveServo(svoCameraPitch, newPos, SPEED_CAMERA_PITCH);
 	} else if (buttons.name.dpadLeft) {
 		Serial.println("Camera yaw up");
-		int currentPos = svoCameraYaw.read();
-		int newPos = constrain(currentPos + 10, 0, 180);
-		moveServo(svoCameraYaw, newPos, 10);
+		int newPos = constrain(svoCameraYaw.read() + 10, RANGE_CAMERA_YAW[0], RANGE_CAMERA_YAW[1]);
+		moveServo(svoCameraYaw, newPos, SPEED_CAMERA_YAW);
 	} else if (buttons.name.dpadRight) {
 		Serial.println("Camera yaw down");
-		int currentPos = svoCameraYaw.read();
-		int newPos = constrain(currentPos - 10, 0, 180);
-		moveServo(svoCameraYaw, newPos, 10);
+		int newPos = constrain(svoCameraYaw.read() - 10, RANGE_CAMERA_YAW[0], RANGE_CAMERA_YAW[1]);
+		moveServo(svoCameraYaw, newPos, SPEED_CAMERA_YAW);
 	}
 }
 
@@ -354,21 +357,21 @@ void printControllerState() {
 	Serial.println(rightTrigger);
 }
 
-void moveServo(Servo svo, int to, int delayTime) {
+void moveServo(Servo svo, int to, int speed) {
 	int from = svo.read();
 	if (from < to) {
 		for (int i = from; i <= to; i++) {
 			Serial.print("Servo pos: ");
 			Serial.println(i);
 			svo.write(i);
-			delay(delayTime);
+			delay(1000 / speed);
 		}
 	} else {
 		for (int i = from; i >= to; i--) {
 			Serial.print("Servo pos: ");
 			Serial.println(i);
 			svo.write(i);
-			delay(delayTime);
+			delay(1000 / speed);
 		}
 	}
 }
