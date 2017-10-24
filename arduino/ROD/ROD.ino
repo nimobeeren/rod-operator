@@ -24,6 +24,13 @@ const int PACKET_RSY[2] = {20, 24};
 const int PACKET_LT[2] = {25, 29};
 const int PACKET_RT[2] = {30, 34};
 
+// Servo position ranges
+const int RANGE_LOADER[2] = {0, 120};
+const int RANGE_BOARDING[2] = {0, 180};
+const int RANGE_CAMERA_PITCH[2] = {0, 180};
+const int RANGE_CAMERA_YAW[2] = {0, 180};
+const int RANGE_CRANE[2] = {0, 70};
+
 // Controller input deadzones
 const float DEADZONE_STICK = 0.2;
 const float DEADZONE_TRIGGER = 0;
@@ -78,6 +85,15 @@ void setup() {
 	// Turn off all outputs
 	analogWrite(pinWheelsLeft, 0);
 	analogWrite(pinWheelsRight, 0);
+	setReverseLeft(false);
+	setReverseRight(false);
+
+	// Set all servo's to their initial position
+	svoLoader.write(RANGE_LOADER[0]);
+	svoBoarding.write(RANGE_BOARDING[1]);
+	svoCameraPitch.write(90);
+	svoCameraYaw.write(90);
+	svoCrane.write(RANGE_CRANE[0]);
 
 	// Clear the buffer
 	while (Serial1.available()) {
@@ -158,28 +174,28 @@ void loop() {
 	// Loader controls
 	if (buttons.name.a) {
 		Serial.println("Loader up");
-		moveServo(svoLoader, 180, 10);
+		moveServo(svoLoader, RANGE_LOADER[1], 10);
 	} else if (buttons.name.b) {
 		Serial.println("Loader down");
-		moveServo(svoLoader, 0, 10);
+		moveServo(svoLoader, RANGE_LOADER[0], 10);
 	}
 
 	// Boarding controls
 	if (buttons.name.leftTop) {
-		Serial.println("Boarding up");
-		moveServo(svoBoarding, 180, 10);
+		Serial.println("Boarding in");
+		moveServo(svoBoarding, RANGE_BOARDING[1], 10);
 	} else if (buttons.name.rightTop) {
-		Serial.println("Boarding down");
-		moveServo(svoBoarding, 0, 10);
+		Serial.println("Boarding out");
+		moveServo(svoBoarding, RANGE_BOARDING[0], 10);
 	}
 
 	// Crane controls
 	if (buttons.name.y) {
 		Serial.println("Crane up");
-		moveServo(svoCrane, 60, 10);
+		moveServo(svoCrane, RANGE_CRANE[1], 10);
 	} else if (buttons.name.x) {
 		Serial.println("Crane down");
-		moveServo(svoCrane, 0, 10);
+		moveServo(svoCrane, RANGE_CRANE[0], 10);
 	}
 
 	// Camera controls
