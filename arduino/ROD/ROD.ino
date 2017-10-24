@@ -24,6 +24,10 @@ const int PACKET_RSY[2] = {20, 24};
 const int PACKET_LT[2] = {25, 29};
 const int PACKET_RT[2] = {30, 34};
 
+// Controller input deadzones
+const float DEADZONE_STICK = 0.2;
+const float DEADZONE_TRIGGER = 0;
+
 // PWM out pins
 int pinWheelsLeft = 3;
 int pinWheelsRight = 5;
@@ -121,41 +125,49 @@ void loop() {
 //		printControllerState();
 
 		// Wheels
-		if (buttons.index[7]) {
-			// Move forwards
-			Serial.println("Moving forwards");
-			analogWrite(pinWheelsLeft, 255);
-			analogWrite(pinWheelsRight, 255);
-			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinForwardRight, HIGH);
-		} else if (buttons.index[6]) {
-			// Move backwards
-			Serial.println("Moving backwards");
-			analogWrite(pinWheelsLeft, 255);
-			analogWrite(pinWheelsRight, 255);
-			digitalWrite(pinReverseLeft, HIGH);
-			digitalWrite(pinForwardRight, LOW);
-		} else if (buttons.index[4]) {
-			// Turn left
-			Serial.println("Turning left");
-			analogWrite(pinWheelsLeft, 255);
-			analogWrite(pinWheelsRight, 255);
-			digitalWrite(pinReverseLeft, HIGH);
-			digitalWrite(pinForwardRight, HIGH);
-		} else if (buttons.index[5]) {
-			// Turn right
-			Serial.println("Turning right");
-			analogWrite(pinWheelsLeft, 255);
-			analogWrite(pinWheelsRight, 255);
-			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinForwardRight, LOW);
-		} else {
-		    // Stop moving
-		    Serial.println("Stopping");
-			analogWrite(pinWheelsLeft, 0);
-			analogWrite(pinWheelsRight, 0);
-			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinForwardRight, HIGH);
+		if (leftTrigger > DEADZONE_TRIGGER || rightTrigger > DEADZONE_TRIGGER || abs(leftStick.x) > DEADZONE_STICK) {
+		    float leftSpeed, rightSpeed;
+		    float x = rightTrigger - leftTrigger;
+		    float y = leftStick.x;
+
+		    // Don't read small deficiencies in stick placement
+		    if (abs(y) <= DEADZONE_STICK) {
+		        y = 0;
+		    }
+
+		    // Print x and y for debugging
+            Serial.print("x: ");
+            Serial.print(x);
+            Serial.print(" \ty: ");
+            Serial.println(y);
+
+            // Calculate speed of wheels with respect to throttle and steering
+            leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
+            rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
+		    leftSpeed = constrain(leftSpeed, -1, 1);
+		    rightSpeed = constrain(rightSpeed, -1, 1);
+
+		    // Print wheel speed
+		    Serial.print("Left wheels: ");
+		    Serial.print(leftSpeed);
+		    Serial.print("\tRight wheels: ");
+		    Serial.println(rightSpeed);
+
+		    // Apply wheel speed
+		    analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
+		    analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
+
+		    // Apply wheel direction
+		    if (leftSpeed < 0) {
+                setReverseLeft(true);
+		    } else {
+		        setReverseLeft(false);
+		    }
+		    if (rightSpeed < 0) {
+		        setReverseRight(true);
+		    } else {
+		        setReverseRight(false);
+		    }
 		}
 
 		if (buttons.name.a) {
@@ -318,5 +330,21 @@ void moveServo(Servo svo, int to, int delayTime) {
             svo.write(i);
             delay(delayTime);
         }
+    }
+}
+
+void setReverseLeft(bool reverse) {
+    if (reverse) {
+        digitalWrite(pinReverseLeft, HIGH);
+    } else {
+        digitalWrite(pinReverseLeft, LOW);
+    }
+}
+
+void setReverseRight(bool reverse) {
+    if (reverse) {
+        digitalWrite(pinForwardRight, LOW);
+    } else {
+        digitalWrite(pinForwardRight, HIGH);
     }
 }
