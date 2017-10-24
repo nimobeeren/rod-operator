@@ -88,10 +88,6 @@ void setup() {
 
 void loop() {
 	if (Serial1.available() >= PACKET_SIZE) {
-	    // Print amount of received bytes
-	    Serial.print("Bytes: ");
-	    Serial.println(Serial1.available());
-
 		// Read the latest packet
 		char packet[PACKET_SIZE];
 		for (int i = 0; i < PACKET_SIZE; i++) {
@@ -135,12 +131,6 @@ void loop() {
 		        y = 0;
 		    }
 
-		    // Print x and y for debugging
-            Serial.print("x: ");
-            Serial.print(x);
-            Serial.print(" \ty: ");
-            Serial.println(y);
-
             // Calculate speed of wheels with respect to throttle and steering
             leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
             rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
@@ -170,12 +160,50 @@ void loop() {
 		    }
 		}
 
-		if (buttons.name.a) {
-		    Serial.println("Servo up");
+        // Loader controls
+        if (buttons.name.a) {
+            Serial.println("Loader up");
+            moveServo(svoLoader, 180, 10);
+        } else if (buttons.name.b) {
+            Serial.println("Loader down");
+            moveServo(svoLoader, 0, 10);
+        }
+
+        // Boarding controls
+		if (buttons.name.leftTop) { 
+		    Serial.println("Boarding up");
 		    moveServo(svoBoarding, 180, 10);
-		} else if (buttons.name.b) {
-		    Serial.println("Servo down");
+		} else if (buttons.name.rightTop) {
+		    Serial.println("Boarding down");
 		    moveServo(svoBoarding, 0, 10);
+		}
+		
+		// Crane controls
+		if (buttons.name.y) {
+		    Serial.println("Crane up");
+		    moveServo(svoCrane, 60, 10);
+		} else if (buttons.name.x) {
+		    Serial.println("Crane down");
+		    moveServo(svoCrane, 0, 10);
+		}
+		
+		// Camera controls
+		if (buttons.name.dpadUp) {
+		    Serial.println("Camera pitch up");
+		    int currentPos = svoCameraPitch.read();
+		    moveServo(svoCameraPitch, currentPos + 10, 10);
+		} else if (buttons.name.dpadDown) {
+		    Serial.println("Camera pitch down");
+		    int currentPos = svoCameraPitch.read();
+		    moveServo(svoCameraPitch, currentPos - 10, 10);
+		} else if (buttons.name.dpadLeft) {
+            Serial.println("Camera yaw up");
+            int currentPos = svoCameraYaw.read();
+            moveServo(svoCameraYaw, currentPos + 10, 10);
+		} else if (buttons.name.dpadRight) {
+		    Serial.println("Camera yaw down");
+            int currentPos = svoCameraYaw.read();
+            moveServo(svoCameraYaw, currentPos - 10, 10);
 		}
 
 		Serial.println();
@@ -317,14 +345,14 @@ void printControllerState() {
 void moveServo(Servo svo, int to, int delayTime) {
     int from = svo.read();
     if (from < to) {
-        for (int i = from; i < to; i++) {
+        for (int i = from; i <= to; i++) {
             Serial.print("Servo pos: ");
             Serial.println(i);
             svo.write(i);
             delay(delayTime);
         }
     } else {
-        for (int i = from; i > to; i--) {
+        for (int i = from; i >= to; i--) {
             Serial.print("Servo pos: ");
             Serial.println(i);
             svo.write(i);
