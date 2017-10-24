@@ -87,131 +87,126 @@ void setup() {
 }
 
 void loop() {
-	if (Serial1.available() >= PACKET_SIZE) {
-		// Read the latest packet
-		char packet[PACKET_SIZE];
-		for (int i = 0; i < PACKET_SIZE; i++) {
-			packet[i] = Serial1.read();
-		}
+    char packet[PACKET_SIZE];
+    int readBytes = 0;
+	while (readBytes < PACKET_SIZE) {
+	    if (Serial1.available()) {
+	        packet[readBytes++] = Serial1.read();
+	        if (packet[readBytes - 1] == ';' && readBytes < PACKET_SIZE) {
+                // We found a termination symbol before the end of the packet
+                Serial.print("Bad packet: ");
+                Serial.println(packet);
+                Serial.println();
+                return;
+            }
+	    }
+	}
 
-		// Discard the rest of the buffer
-		while (Serial1.available()) {
-			Serial1.read();
-		}
+    // Print received packet
+    Serial.print("Packet: ");
+    Serial.println(packet);
 
-		// Print received packet
-		Serial.print("Packet: ");
-		Serial.println(packet);
+    // Decode controller state
+    buttons = decodeButtons(packet);
+    leftStick = decodeLeftStick(packet);
+    rightStick = decodeRightStick(packet);
+    leftTrigger = decodeLeftTrigger(packet);
+    rightTrigger = decodeRightTrigger(packet);
 
-		// Validate packet
-		if (packet[PACKET_SIZE - 1] != ';') {
-		    Serial.println("Bad packet");
-		    Serial.println();
-		    return;
-		}
-
-		// Decode controller state
-		buttons = decodeButtons(packet);
-		leftStick = decodeLeftStick(packet);
-		rightStick = decodeRightStick(packet);
-		leftTrigger = decodeLeftTrigger(packet);
-		rightTrigger = decodeRightTrigger(packet);
-
-		// Print controller state for debugging
+    // Print controller state for debugging
 //		printControllerState();
 
-		// Wheels
-		if (leftTrigger > DEADZONE_TRIGGER || rightTrigger > DEADZONE_TRIGGER || abs(leftStick.x) > DEADZONE_STICK) {
-		    float leftSpeed, rightSpeed;
-		    float x = rightTrigger - leftTrigger;
-		    float y = leftStick.x;
+    // Wheels
+    if (leftTrigger > DEADZONE_TRIGGER || rightTrigger > DEADZONE_TRIGGER || abs(leftStick.x) > DEADZONE_STICK) {
+        float leftSpeed, rightSpeed;
+        float x = rightTrigger - leftTrigger;
+        float y = leftStick.x;
 
-		    // Don't read small deficiencies in stick placement
-		    if (abs(y) <= DEADZONE_STICK) {
-		        y = 0;
-		    }
-
-            // Calculate speed of wheels with respect to throttle and steering
-            leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
-            rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
-		    leftSpeed = constrain(leftSpeed, -1, 1);
-		    rightSpeed = constrain(rightSpeed, -1, 1);
-
-		    // Print wheel speed
-		    Serial.print("Left wheels: ");
-		    Serial.print(leftSpeed);
-		    Serial.print("\tRight wheels: ");
-		    Serial.println(rightSpeed);
-
-		    // Apply wheel speed
-		    analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
-		    analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
-
-		    // Apply wheel direction
-		    if (leftSpeed < 0) {
-                setReverseLeft(true);
-		    } else {
-		        setReverseLeft(false);
-		    }
-		    if (rightSpeed < 0) {
-		        setReverseRight(true);
-		    } else {
-		        setReverseRight(false);
-		    }
-		}
-
-        // Loader controls
-        if (buttons.name.a) {
-            Serial.println("Loader up");
-            moveServo(svoLoader, 180, 10);
-        } else if (buttons.name.b) {
-            Serial.println("Loader down");
-            moveServo(svoLoader, 0, 10);
+        // Don't read small deficiencies in stick placement
+        if (abs(y) <= DEADZONE_STICK) {
+            y = 0;
         }
 
-        // Boarding controls
-		if (buttons.name.leftTop) { 
-		    Serial.println("Boarding up");
-		    moveServo(svoBoarding, 180, 10);
-		} else if (buttons.name.rightTop) {
-		    Serial.println("Boarding down");
-		    moveServo(svoBoarding, 0, 10);
-		}
-		
-		// Crane controls
-		if (buttons.name.y) {
-		    Serial.println("Crane up");
-		    moveServo(svoCrane, 60, 10);
-		} else if (buttons.name.x) {
-		    Serial.println("Crane down");
-		    moveServo(svoCrane, 0, 10);
-		}
-		
-		// Camera controls
-		if (buttons.name.dpadUp) {
-		    Serial.println("Camera pitch up");
-		    int currentPos = svoCameraPitch.read();
-		    int newPos = constrain(currentPos + 10, 0, 180);
-		    moveServo(svoCameraPitch, newPos, 10);
-		} else if (buttons.name.dpadDown) {
-		    Serial.println("Camera pitch down");
-		    int currentPos = svoCameraPitch.read();
-		    int newPos = constrain(currentPos - 10, 0, 180);
-		    moveServo(svoCameraPitch, newPos, 10);
-		} else if (buttons.name.dpadLeft) {
-            Serial.println("Camera yaw up");
-            int currentPos = svoCameraYaw.read();
-            int newPos = constrain(currentPos + 10, 0, 180);
-            moveServo(svoCameraYaw, newPos, 10);
-		} else if (buttons.name.dpadRight) {
-		    Serial.println("Camera yaw down");
-            int currentPos = svoCameraYaw.read();
-            int newPos = constrain(currentPos - 10, 0, 180);
-            moveServo(svoCameraYaw, newPos, 10);
-		}
+        // Calculate speed of wheels with respect to throttle and steering
+        leftSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * -y;
+        rightSpeed = x + (-6.0/5.0 * x + abs(x) - 1) * y;
+        leftSpeed = constrain(leftSpeed, -1, 1);
+        rightSpeed = constrain(rightSpeed, -1, 1);
 
-		Serial.println();
-	}
+        // Print wheel speed
+        Serial.print("Left wheels: ");
+        Serial.print(leftSpeed);
+        Serial.print("\tRight wheels: ");
+        Serial.println(rightSpeed);
+
+        // Apply wheel speed
+        analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
+        analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
+
+        // Apply wheel direction
+        if (leftSpeed < 0) {
+            setReverseLeft(true);
+        } else {
+            setReverseLeft(false);
+        }
+        if (rightSpeed < 0) {
+            setReverseRight(true);
+        } else {
+            setReverseRight(false);
+        }
+    }
+
+    // Loader controls
+    if (buttons.name.a) {
+        Serial.println("Loader up");
+        moveServo(svoLoader, 180, 10);
+    } else if (buttons.name.b) {
+        Serial.println("Loader down");
+        moveServo(svoLoader, 0, 10);
+    }
+
+    // Boarding controls
+    if (buttons.name.leftTop) {
+        Serial.println("Boarding up");
+        moveServo(svoBoarding, 180, 10);
+    } else if (buttons.name.rightTop) {
+        Serial.println("Boarding down");
+        moveServo(svoBoarding, 0, 10);
+    }
+
+    // Crane controls
+    if (buttons.name.y) {
+        Serial.println("Crane up");
+        moveServo(svoCrane, 60, 10);
+    } else if (buttons.name.x) {
+        Serial.println("Crane down");
+        moveServo(svoCrane, 0, 10);
+    }
+
+    // Camera controls
+    if (buttons.name.dpadUp) {
+        Serial.println("Camera pitch up");
+        int currentPos = svoCameraPitch.read();
+        int newPos = constrain(currentPos + 10, 0, 180);
+        moveServo(svoCameraPitch, newPos, 10);
+    } else if (buttons.name.dpadDown) {
+        Serial.println("Camera pitch down");
+        int currentPos = svoCameraPitch.read();
+        int newPos = constrain(currentPos - 10, 0, 180);
+        moveServo(svoCameraPitch, newPos, 10);
+    } else if (buttons.name.dpadLeft) {
+        Serial.println("Camera yaw up");
+        int currentPos = svoCameraYaw.read();
+        int newPos = constrain(currentPos + 10, 0, 180);
+        moveServo(svoCameraYaw, newPos, 10);
+    } else if (buttons.name.dpadRight) {
+        Serial.println("Camera yaw down");
+        int currentPos = svoCameraYaw.read();
+        int newPos = constrain(currentPos - 10, 0, 180);
+        moveServo(svoCameraYaw, newPos, 10);
+    }
+
+    Serial.println();
 }
 
 DigitalButtons decodeButtons(char *packet) {
