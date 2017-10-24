@@ -6,7 +6,7 @@ typedef union {
             leftTop, rightTop, leftTrigger, rightTrigger,
             select, start, leftStick, rightStick,
             dpadUp, dpadDown, dpadLeft, dpadRight;
-    };
+    } name;
     bool index[16];
 } DigitalButtons;
 
@@ -28,6 +28,10 @@ const int PACKET_RT[2] = {30, 34};
 int pinWheelsLeft = 3;
 int pinWheelsRight = 5;
 int pinLoader = 6;
+int pinBoarding = 9;
+int pinCameraPitch = 10;
+int pinCameraYaw = 11;
+int pinCrane = 13;
 
 // Digital out pins
 int pinReverseLeft = 7;
@@ -41,6 +45,10 @@ float leftTrigger;
 float rightTrigger;
 
 Servo svoLoader;
+Servo svoBoarding;
+Servo svoCameraPitch;
+Servo svoCameraYaw;
+Servo svoCrane;
 
 void setup() {
 	// Enable serial connetion using Ethernet or WiFi
@@ -59,6 +67,10 @@ void setup() {
 
 	// Set control pin for servo's
 	svoLoader.attach(pinLoader);
+	svoBoarding.attach(pinBoarding);
+	svoCameraPitch.attach(pinCameraPitch);
+	svoCameraYaw.attach(pinCameraYaw);
+	svoCrane.attach(pinCrane);
 
 	// Turn off all outputs
 	analogWrite(pinWheelsLeft, 0);
@@ -106,7 +118,7 @@ void loop() {
 		rightTrigger = decodeRightTrigger(packet);
 
 		// Print controller state for debugging
-		printControllerState();
+//		printControllerState();
 
 		// Wheels
 		if (buttons.index[7]) {
@@ -144,6 +156,14 @@ void loop() {
 			analogWrite(pinWheelsRight, 0);
 			digitalWrite(pinReverseLeft, LOW);
 			digitalWrite(pinForwardRight, HIGH);
+		}
+
+		if (buttons.name.a) {
+		    Serial.println("Servo up");
+		    moveServo(svoBoarding, 180, 10);
+		} else if (buttons.name.b) {
+		    Serial.println("Servo down");
+		    moveServo(svoBoarding, 0, 10);
 		}
 
 		Serial.println();
@@ -280,4 +300,23 @@ void printControllerState() {
     // Print right trigger state
     Serial.print("Right trigger: ");
     Serial.println(rightTrigger);
+}
+
+void moveServo(Servo svo, int to, int delayTime) {
+    int from = svo.read();
+    if (from < to) {
+        for (int i = from; i < to; i++) {
+            Serial.print("Servo pos: ");
+            Serial.println(i);
+            svo.write(i);
+            delay(delayTime);
+        }
+    } else {
+        for (int i = from; i > to; i--) {
+            Serial.print("Servo pos: ");
+            Serial.println(i);
+            svo.write(i);
+            delay(delayTime);
+        }
+    }
 }
