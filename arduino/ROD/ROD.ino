@@ -31,7 +31,7 @@ int pinLoader = 6;
 
 // Digital out pins
 int pinReverseLeft = 7;
-int pinReverseRight = 8;
+int pinForwardRight = 8;
 
 // Variables to hold controller state
 DigitalButtons buttons;
@@ -51,7 +51,7 @@ void setup() {
 	pinMode(pinWheelsRight, OUTPUT);
 	pinMode(pinLoader, OUTPUT);
 	pinMode(pinReverseLeft, OUTPUT);
-	pinMode(pinReverseRight, OUTPUT);
+	pinMode(pinForwardRight, OUTPUT);
 
 	// Enable serial for debugging purposes
 	Serial.begin(9600);
@@ -139,35 +139,35 @@ void loop() {
 			analogWrite(pinWheelsLeft, 255);
 			analogWrite(pinWheelsRight, 255);
 			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinReverseRight, LOW);
+			digitalWrite(pinForwardRight, HIGH);
 		} else if (buttons.index[6]) {
 			// Move backwards
 			Serial.println("Moving backwards");
 			analogWrite(pinWheelsLeft, 255);
 			analogWrite(pinWheelsRight, 255);
 			digitalWrite(pinReverseLeft, HIGH);
-			digitalWrite(pinReverseRight, HIGH);
+			digitalWrite(pinForwardRight, LOW);
 		} else if (buttons.index[4]) {
 			// Turn left
 			Serial.println("Turning left");
 			analogWrite(pinWheelsLeft, 255);
 			analogWrite(pinWheelsRight, 255);
 			digitalWrite(pinReverseLeft, HIGH);
-			digitalWrite(pinReverseRight, LOW);
+			digitalWrite(pinForwardRight, HIGH);
 		} else if (buttons.index[5]) {
 			// Turn right
 			Serial.println("Turning right");
 			analogWrite(pinWheelsLeft, 255);
 			analogWrite(pinWheelsRight, 255);
 			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinReverseRight, HIGH);
+			digitalWrite(pinForwardRight, LOW);
 		} else {
 		    // Stop moving
 		    Serial.println("Stopping");
 			analogWrite(pinWheelsLeft, 0);
 			analogWrite(pinWheelsRight, 0);
 			digitalWrite(pinReverseLeft, LOW);
-			digitalWrite(pinReverseRight, LOW);
+			digitalWrite(pinForwardRight, HIGH);
 		}
 
 		Serial.println();
