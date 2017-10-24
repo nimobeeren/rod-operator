@@ -191,19 +191,23 @@ void loop() {
 		if (buttons.name.dpadUp) {
 		    Serial.println("Camera pitch up");
 		    int currentPos = svoCameraPitch.read();
-		    moveServo(svoCameraPitch, currentPos + 10, 10);
+		    int newPos = constrain(currentPos + 10, 0, 180);
+		    moveServo(svoCameraPitch, newPos, 10);
 		} else if (buttons.name.dpadDown) {
 		    Serial.println("Camera pitch down");
 		    int currentPos = svoCameraPitch.read();
-		    moveServo(svoCameraPitch, currentPos - 10, 10);
+		    int newPos = constrain(currentPos - 10, 0, 180);
+		    moveServo(svoCameraPitch, newPos, 10);
 		} else if (buttons.name.dpadLeft) {
             Serial.println("Camera yaw up");
             int currentPos = svoCameraYaw.read();
-            moveServo(svoCameraYaw, currentPos + 10, 10);
+            int newPos = constrain(currentPos + 10, 0, 180);
+            moveServo(svoCameraYaw, newPos, 10);
 		} else if (buttons.name.dpadRight) {
 		    Serial.println("Camera yaw down");
             int currentPos = svoCameraYaw.read();
-            moveServo(svoCameraYaw, currentPos - 10, 10);
+            int newPos = constrain(currentPos - 10, 0, 180);
+            moveServo(svoCameraYaw, newPos, 10);
 		}
 
 		Serial.println();
