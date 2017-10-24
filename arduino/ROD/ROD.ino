@@ -105,32 +105,8 @@ void loop() {
 		leftTrigger = decodeLeftTrigger(packet);
 		rightTrigger = decodeRightTrigger(packet);
 
-		// Print button state
-		Serial.print("Buttons: ");
-		for (int i = 0; i < 16; i++) {
-			Serial.print(buttons.index[i]);
-		}
-		Serial.println();
-
-		// Print left stick state
-		Serial.print("Left stick: ");
-		Serial.print(leftStick.x);
-		Serial.print(", ");
-		Serial.println(leftStick.y);
-
-		// Print right stick state
-        Serial.print("Right stick: ");
-        Serial.print(rightStick.x);
-        Serial.print(", ");
-        Serial.println(rightStick.y);
-
-        // Print left trigger state
-        Serial.print("Left trigger: ");
-        Serial.println(leftTrigger);
-
-        // Print right trigger state
-        Serial.print("Right trigger: ");
-        Serial.println(rightTrigger);
+		// Print controller state for debugging
+		printControllerState();
 
 		// Wheels
 		if (buttons.index[7]) {
@@ -275,4 +251,33 @@ float decodeRightTrigger(char *packet) {
     }
 
     return atof(str);
+}
+
+void printControllerState() {
+    // Print button state
+    Serial.print("Buttons: ");
+    for (int i = 0; i < 16; i++) {
+        Serial.print(buttons.index[i]);
+    }
+    Serial.println();
+
+    // Print left stick state
+    Serial.print("Left stick: ");
+    Serial.print(leftStick.x);
+    Serial.print(", ");
+    Serial.println(leftStick.y);
+
+    // Print right stick state
+    Serial.print("Right stick: ");
+    Serial.print(rightStick.x);
+    Serial.print(", ");
+    Serial.println(rightStick.y);
+
+    // Print left trigger state
+    Serial.print("Left trigger: ");
+    Serial.println(leftTrigger);
+
+    // Print right trigger state
+    Serial.print("Right trigger: ");
+    Serial.println(rightTrigger);
 }
