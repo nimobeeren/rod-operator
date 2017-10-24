@@ -58,16 +58,15 @@ void setup() {
 	// Enable serial connetion using Ethernet or WiFi
 	Serial1.begin(115200);
 
+	// Enable serial for debugging purposes
+	Serial.begin(9600);
+
     // Enable output on all out pins
     pinMode(pinWheelsLeft, OUTPUT);
 	pinMode(pinWheelsRight, OUTPUT);
 	pinMode(pinLoader, OUTPUT);
 	pinMode(pinReverseLeft, OUTPUT);
 	pinMode(pinForwardRight, OUTPUT);
-
-	// Enable serial for debugging purposes
-	Serial.begin(9600);
-	Serial.print("Hello World!");
 
 	// Set control pin for servo's
 	svoLoader.attach(pinLoader);
@@ -103,8 +102,8 @@ void loop() {
 	}
 
     // Print received packet
-    Serial.print("Packet: ");
-    Serial.println(packet);
+//    Serial.print("Packet: ");
+//    Serial.println(packet);
 
     // Decode controller state
     buttons = decodeButtons(packet);
@@ -205,8 +204,6 @@ void loop() {
         int newPos = constrain(currentPos - 10, 0, 180);
         moveServo(svoCameraYaw, newPos, 10);
     }
-
-    Serial.println();
 }
 
 DigitalButtons decodeButtons(char *packet) {

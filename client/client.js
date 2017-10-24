@@ -1,4 +1,4 @@
-var pollingRate = 20; // Hz
+var pollingRate = 400; // Hz
 
 var px = new PxGamepad();
 px.start();
