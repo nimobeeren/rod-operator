@@ -1,6 +1,7 @@
-var pollingRate = 400; // Hz
+var pollingRate = 100; // Hz
 
 var px = new PxGamepad();
+var lastPacket = '';
 px.start();
 
 function send(msg) {
@@ -60,7 +61,11 @@ setInterval(function () {
         document.getElementById('sticks').innerHTML = JSON.stringify(px.leftStick, null, 4) + JSON.stringify(px.rightStick, null, 4);
 
         // Send encoded gamepad state to Arduino
-        send(encode(px));
+        var packet = encode(px);
+        if (packet !== lastPacket) {
+            send(packet);
+            lastPacket = packet;
+        }
     } else {
         document.getElementById('buttons').innerHTML = 'No gamepad connected';
         document.getElementById('sticks').innerHTML = '';
