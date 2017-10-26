@@ -20,7 +20,7 @@ server.listen(3000, function () {
     console.log('Server running');
 });
 
-tcp.connect(2001, '192.168.1.1', function () {
+tcp.connect(2001, '192.168.50.32', function () {
     console.log('Connected to Arduino');
 });
 
