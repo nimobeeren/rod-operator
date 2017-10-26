@@ -113,20 +113,40 @@ void loop() {
 	int readBytes = 0;
 	while (readBytes < PACKET_SIZE) {
 		if (Serial1.available()) {
-			packet[readBytes++] = Serial1.read();
-			if (packet[readBytes - 1] == ';' && readBytes < PACKET_SIZE) {
-				// We found a termination symbol before the end of the packet
-				Serial.print("Bad packet: ");
-				Serial.println(packet);
-				Serial.println();
-				return;
+		    // Read incoming byte
+			char newByte = Serial1.read();
+			bool bad = false;
+
+			// Validate byte
+			if (readBytes == PACKET_BUTTONS[1] || readBytes == PACKET_LSX[1] || readBytes == PACKET_LSY[1] ||
+			readBytes == PACKET_RSX[1] || readBytes == PACKET_RSY[1] || readBytes == PACKET_LT[1]) {
+			    if (newByte != ',') {
+			        Serial.println("Missing separator");
+			        bad = true;
+			    }
+			} else if (readBytes < PACKET_SIZE - 1 && newByte == ';') {
+			    // We found a termination symbol before the end of the packet
+			    Serial.println("Premature termination");
+                bad = true;
 			}
+
+			packet[readBytes] = newByte;
+			readBytes++;
+
+			if (bad) {
+                Serial.print("Bad packet: ");
+                for (int i = 0; i < readBytes; i++) {
+                    Serial.print(packet[i]);
+                }
+                Serial.print("\n\n");
+                return;
+            }
 		}
 	}
 
 	// Print received packet
-//	Serial.print("Packet: ");
-//	Serial.println(packet);
+	Serial.print("Packet: ");
+	Serial.println(packet);
 
 	// Decode controller state
 	buttons = decodeButtons(packet);
@@ -176,6 +196,12 @@ void loop() {
 		} else {
 			setReverseRight(false);
 		}
+	} else {
+	    // Triggers and wheels are in standard position, don't move
+	    analogWrite(pinWheelsLeft, 0);
+	    analogWrite(pinWheelsRight, 0);
+	    setReverseLeft(false);
+	    setReverseRight(false);
 	}
 
 	// Loader controls
