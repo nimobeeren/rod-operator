@@ -43,31 +43,27 @@ const float DEADZONE_STICK = 0.2;
 const float DEADZONE_TRIGGER = 0;
 
 // PWM out pins
-int pinWheelsLeft = 3;
-int pinWheelsRight = 5;
-int pinLoader = 6;
-int pinBoarding = 9;
-int pinCameraPitch = 10;
-int pinCameraYaw = 11;
-int pinCrane = 13;
+const int PIN_WHEELS_LEFT = 3;
+const int PIN_WHEELS_RIGHT = 5;
+const int PIN_LOADER = 6;
+const int PIN_BOARDING = 9;
+const int PIN_CAMERA_PITCH = 10;
+const int PIN_CAMERA_YAW = 11;
+const int PIN_CRANE = 13;
 
 // Digital out pins
-int pinReverseLeft = 7;
-int pinForwardRight = 8;
+int PIN_REVERSE_LEFT = 7;
+int PIN_FORWARD_RIGHT = 8;
 
 // Variables to hold controller state
 DigitalButtons buttons;
-AnalogStick leftStick;
-AnalogStick rightStick;
-float leftTrigger;
-float rightTrigger;
+AnalogStick leftStick, rightStick;
+float leftTrigger, rightTrigger;
 
-Servo svoLoader;
-Servo svoBoarding;
-Servo svoCameraPitch;
-Servo svoCameraYaw;
-Servo svoCrane;
+// Variables to control servo's
+Servo svoLoader, svoBoarding, svoCameraPitch, svoCameraYaw, svoCrane;
 
+// This runs once on startup
 void setup() {
 	// Enable serial connetion using Ethernet or WiFi
 	Serial1.begin(115200);
@@ -76,22 +72,22 @@ void setup() {
 	Serial.begin(9600);
 
 	// Enable output on all out pins
-	pinMode(pinWheelsLeft, OUTPUT);
-	pinMode(pinWheelsRight, OUTPUT);
-	pinMode(pinLoader, OUTPUT);
-	pinMode(pinReverseLeft, OUTPUT);
-	pinMode(pinForwardRight, OUTPUT);
+	pinMode(PIN_WHEELS_LEFT, OUTPUT);
+	pinMode(PIN_WHEELS_RIGHT, OUTPUT);
+	pinMode(PIN_LOADER, OUTPUT);
+	pinMode(PIN_REVERSE_LEFT, OUTPUT);
+	pinMode(PIN_FORWARD_RIGHT, OUTPUT);
 
 	// Set control pin for servo's
-	svoLoader.attach(pinLoader);
-	svoBoarding.attach(pinBoarding);
-	svoCameraPitch.attach(pinCameraPitch);
-	svoCameraYaw.attach(pinCameraYaw);
-	svoCrane.attach(pinCrane);
+	svoLoader.attach(PIN_LOADER);
+	svoBoarding.attach(PIN_BOARDING);
+	svoCameraPitch.attach(PIN_CAMERA_PITCH);
+	svoCameraYaw.attach(PIN_CAMERA_YAW);
+	svoCrane.attach(PIN_CRANE);
 
 	// Turn off all outputs
-	analogWrite(pinWheelsLeft, 0);
-	analogWrite(pinWheelsRight, 0);
+	analogWrite(PIN_WHEELS_LEFT, 0);
+	analogWrite(PIN_WHEELS_RIGHT, 0);
 	setReverseLeft(false);
 	setReverseRight(false);
 
@@ -108,6 +104,7 @@ void setup() {
 	}
 }
 
+// This loops indefinitely
 void loop() {
 	char packet[PACKET_SIZE];
 	int readBytes = 0;
@@ -133,6 +130,7 @@ void loop() {
 			packet[readBytes] = newByte;
 			readBytes++;
 
+            // If packet is invalid, skip it
 			if (bad) {
                 Serial.print("Bad packet: ");
                 for (int i = 0; i < readBytes; i++) {
@@ -182,8 +180,8 @@ void loop() {
 		Serial.println(rightSpeed);
 
 		// Apply wheel speed
-		analogWrite(pinWheelsLeft, map(abs(leftSpeed), 0, 1, 0, 255));
-		analogWrite(pinWheelsRight, map(abs(rightSpeed), 0, 1, 0, 255));
+		analogWrite(PIN_WHEELS_LEFT, map(abs(leftSpeed), 0, 1, 0, 255));
+		analogWrite(PIN_WHEELS_RIGHT, map(abs(rightSpeed), 0, 1, 0, 255));
 
 		// Apply wheel direction
 		if (leftSpeed < 0) {
@@ -198,8 +196,8 @@ void loop() {
 		}
 	} else {
 	    // Triggers and wheels are in standard position, don't move
-	    analogWrite(pinWheelsLeft, 0);
-	    analogWrite(pinWheelsRight, 0);
+	    analogWrite(PIN_WHEELS_LEFT, 0);
+	    analogWrite(PIN_WHEELS_RIGHT, 0);
 	    setReverseLeft(false);
 	    setReverseRight(false);
 	}
@@ -404,16 +402,16 @@ void moveServo(Servo svo, int to, int speed) {
 
 void setReverseLeft(bool reverse) {
 	if (reverse) {
-		digitalWrite(pinReverseLeft, HIGH);
+		digitalWrite(PIN_REVERSE_LEFT, HIGH);
 	} else {
-		digitalWrite(pinReverseLeft, LOW);
+		digitalWrite(PIN_REVERSE_LEFT, LOW);
 	}
 }
 
 void setReverseRight(bool reverse) {
 	if (reverse) {
-		digitalWrite(pinForwardRight, LOW);
+		digitalWrite(PIN_FORWARD_RIGHT, LOW);
 	} else {
-		digitalWrite(pinForwardRight, HIGH);
+		digitalWrite(PIN_FORWARD_RIGHT, HIGH);
 	}
 }
